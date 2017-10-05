@@ -23,6 +23,8 @@ Player::Player(const std::string &file_name) :
 		video_decoder_->width(), video_decoder_->height())},
 	audio_{ std::make_unique<Audio>(
 		audio_decoder_->audio_sample_rate()) },
+	audio_format_converter_{ std::make_unique<AudioFormatConverter>(
+		audio_decoder_->channel_layout(), audio_decoder_->audio_sample_rate(), audio_decoder_->format()) },
 	timer_{std::make_unique<Timer>()},
 	video_packet_queue_{std::make_unique<PacketQueue>(video_queue_size_)},
 	frame_queue_{std::make_unique<FrameQueue>(video_queue_size_)},
@@ -174,28 +176,7 @@ void Player::decode_audio() {
 						demuxer_->video_time_base(),
 						microseconds);
 
-					/*
-					std::unique_ptr<AVFrame, std::function<void(AVFrame*)>>
-						frame_converted{
-						av_frame_alloc(),
-						[](AVFrame* f) { av_free(f->data[0]); } };
-					if (av_frame_copy_props(frame_converted.get(),
-						frame_decoded.get()) < 0) {
-						throw std::runtime_error("Copying frame properties");
-					}
-					if (av_image_alloc(
-						frame_converted->data, frame_converted->linesize,
-						video_decoder_->width(), video_decoder_->height(),
-						video_decoder_->pixel_format(), 1) < 0) {
-						throw std::runtime_error("Allocating picture");
-					}
-					(*format_converter_)(
-						frame_decoded.get(), frame_converted.get());
 
-					if (!frame_queue_->push(move(frame_converted))) {
-						break;
-					}
-					*/
 				}
 			}
 		}

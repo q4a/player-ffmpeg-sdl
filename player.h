@@ -3,6 +3,7 @@
 #include "display.h"
 #include "audio.h"
 #include "format_converter.h"
+#include "audio_format_converter.h"
 #include "queue.h"
 #include "timer.h"
 #include "video_decoder.h"
@@ -31,6 +32,7 @@ private:
 	std::unique_ptr<VideoDecoder> video_decoder_;
 	std::unique_ptr<AudioDecoder> audio_decoder_;
 	std::unique_ptr<FormatConverter> format_converter_;
+	std::unique_ptr<AudioFormatConverter> audio_format_converter_;
 	std::unique_ptr<Display> display_;
 	std::unique_ptr<Audio> audio_;
 	std::unique_ptr<Timer> timer_;
