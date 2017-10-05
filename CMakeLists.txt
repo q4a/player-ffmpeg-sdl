@@ -45,6 +45,8 @@ add_executable(player
     video_decoder.h
     audio_decoder.cpp
     audio_decoder.h
+    audio.cpp
+    audio.h
 )
 
 target_link_libraries(player ${FFMPEG_LIBRARIES} ${SDL2_LIBRARIES})

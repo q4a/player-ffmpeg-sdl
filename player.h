@@ -1,6 +1,7 @@
 #pragma once
 #include "demuxer.h"
 #include "display.h"
+#include "audio.h"
 #include "format_converter.h"
 #include "queue.h"
 #include "timer.h"
@@ -23,6 +24,7 @@ private:
 	void demultiplex();
 	void decode_video();
 	void decode_audio();
+	void queue_audio();
 	void video();
 private:
 	std::unique_ptr<Demuxer> demuxer_;
@@ -30,6 +32,7 @@ private:
 	std::unique_ptr<AudioDecoder> audio_decoder_;
 	std::unique_ptr<FormatConverter> format_converter_;
 	std::unique_ptr<Display> display_;
+	std::unique_ptr<Audio> audio_;
 	std::unique_ptr<Timer> timer_;
 	std::unique_ptr<PacketQueue> video_packet_queue_;
 	std::unique_ptr<FrameQueue> frame_queue_;

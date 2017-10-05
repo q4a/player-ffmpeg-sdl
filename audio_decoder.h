@@ -9,9 +9,7 @@ public:
 	~AudioDecoder();
 	bool send(AVPacket* packet);
 	bool receive(AVFrame* frame);
-	unsigned width() const;
-	unsigned height() const;
-	AVPixelFormat pixel_format() const;
+	int audio_sample_rate() const;
 	AVRational time_base() const;
 private:
 	AVCodecContext* codec_context_{};

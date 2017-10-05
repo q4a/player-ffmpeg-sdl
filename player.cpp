@@ -21,6 +21,8 @@ Player::Player(const std::string &file_name) :
 		video_decoder_->pixel_format(), AV_PIX_FMT_YUV420P)},
 	display_{std::make_unique<Display>(
 		video_decoder_->width(), video_decoder_->height())},
+	audio_{ std::make_unique<Audio>(
+		audio_decoder_->audio_sample_rate()) },
 	timer_{std::make_unique<Timer>()},
 	video_packet_queue_{std::make_unique<PacketQueue>(video_queue_size_)},
 	frame_queue_{std::make_unique<FrameQueue>(video_queue_size_)},
@@ -31,6 +33,7 @@ void Player::operator()() {
 	stages_.emplace_back(&Player::demultiplex, this);
 	stages_.emplace_back(&Player::decode_video, this);
 	stages_.emplace_back(&Player::decode_audio, this);
+	stages_.emplace_back(&Player::queue_audio, this);
 	video();
 
 	for (auto &stage : stages_) {
@@ -201,6 +204,10 @@ void Player::decode_audio() {
 		exception_ = std::current_exception();
 		audio_packet_queue_->quit();
 	}
+}
+
+void Player::queue_audio() {
+
 }
 
 void Player::video() {

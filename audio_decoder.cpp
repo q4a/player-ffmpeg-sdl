@@ -40,16 +40,8 @@ bool AudioDecoder::receive(AVFrame* frame) {
 	}
 }
 
-unsigned AudioDecoder::width() const {
-	return codec_context_->width;
-}
-
-unsigned AudioDecoder::height() const {
-	return codec_context_->height;
-}
-
-AVPixelFormat AudioDecoder::pixel_format() const {
-	return codec_context_->pix_fmt;
+int AudioDecoder::audio_sample_rate() const {
+	return codec_context_->time_base.den;
 }
 
 AVRational AudioDecoder::time_base() const {
