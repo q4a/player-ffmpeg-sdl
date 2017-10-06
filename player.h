@@ -25,7 +25,6 @@ private:
 	void demultiplex();
 	void decode_video();
 	void decode_audio();
-	void queue_audio();
 	void video();
 private:
 	std::unique_ptr<Demuxer> demuxer_;

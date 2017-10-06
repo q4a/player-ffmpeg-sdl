@@ -19,12 +19,6 @@ AudioFormatConverter::AudioFormatConverter(
 	swr_init(conversion_context_);
 }
 
-void AudioFormatConverter::operator()(AVFrame* src, AVFrame* dst) {
-	/*
-	sws_scale(conversion_context_,
-		// Source
-		src->data, src->linesize, 0, height_,
-		// Destination
-		dst->data, dst->linesize);	
-	*/
+int AudioFormatConverter::convert(AVFrame* src, uint8_t **out, int out_count) {
+	return swr_convert(conversion_context_, out, out_count, const_cast<const uint8_t **>(src->data), src->nb_samples);
 }

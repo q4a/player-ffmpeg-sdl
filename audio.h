@@ -11,7 +11,7 @@ private:
 public:
 	Audio(const int freq);
 
-	// Copy frame to display
-	void refresh(
-		std::array<uint8_t*, 3> planes, std::array<size_t, 3> pitches);
+	// Queue audio
+	void queue(
+		const void *data, Uint32 len);
 };

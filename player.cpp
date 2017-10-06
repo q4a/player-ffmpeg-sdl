@@ -35,7 +35,6 @@ void Player::operator()() {
 	stages_.emplace_back(&Player::demultiplex, this);
 	stages_.emplace_back(&Player::decode_video, this);
 	stages_.emplace_back(&Player::decode_audio, this);
-	stages_.emplace_back(&Player::queue_audio, this);
 	video();
 
 	for (auto &stage : stages_) {
@@ -171,12 +170,22 @@ void Player::decode_audio() {
 				// If a whole frame has been decoded,
 				// adjust time stamps and add to queue
 				while (audio_decoder_->receive(frame_decoded.get())) {
+					//frame->pts = av_frame_get_best_effort_timestamp(frame);
 					frame_decoded->pts = av_rescale_q(
 						frame_decoded->pkt_dts,
-						demuxer_->video_time_base(),
+						demuxer_->audio_time_base(),
 						microseconds);
 
+					uint8_t *output;
+					int out_samples = frame_decoded->nb_samples;
+					av_samples_alloc(&output, NULL, 2, out_samples, AV_SAMPLE_FMT_S16, 0);
+					out_samples = audio_format_converter_->convert(frame_decoded.get(), &output, out_samples);
+					int bytes_per_sample = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+					size_t unpadded_linesize = out_samples * bytes_per_sample;
 
+					audio_->queue(output, unpadded_linesize * 2);
+
+					av_freep(&output);
 				}
 			}
 		}
@@ -185,10 +194,6 @@ void Player::decode_audio() {
 		exception_ = std::current_exception();
 		audio_packet_queue_->quit();
 	}
-}
-
-void Player::queue_audio() {
-
 }
 
 void Player::video() {

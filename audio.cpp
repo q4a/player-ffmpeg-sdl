@@ -20,6 +20,7 @@ Audio::Audio(const int freq)
 	SDL_PauseAudioDevice(dev_, 0);
 }
 
-void Audio::refresh(
-	std::array<uint8_t*, 3> planes, std::array<size_t, 3> pitches) {
+void Audio::queue(
+	const void *data, Uint32 len) {
+	SDL_QueueAudio(dev_, data, len);
 }
