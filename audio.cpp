@@ -10,11 +10,11 @@ inline T check_SDL(T value, const std::string &message) {
 	}
 }
 
-Audio::Audio(const int freq)
+Audio::Audio(const int freq, Uint8 channels)
 {
 	want_.freq = freq;
 	want_.format = AUDIO_S16SYS;
-	want_.channels = 2;
+	want_.channels = channels;
 	want_.samples = 4096;
 	dev_ = SDL_OpenAudioDevice(NULL, 0, &want_, &have_, 0);
 	SDL_PauseAudioDevice(dev_, 0);

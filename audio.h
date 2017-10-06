@@ -9,7 +9,7 @@ private:
 	SDL_AudioSpec want_{}, have_{};
 	SDL_AudioDeviceID dev_;
 public:
-	Audio(const int freq);
+	Audio(const int freq, Uint8 channels);
 
 	// Queue audio
 	void queue(

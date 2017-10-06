@@ -22,7 +22,7 @@ Player::Player(const std::string &file_name) :
 	display_{std::make_unique<Display>(
 		video_decoder_->width(), video_decoder_->height())},
 	audio_{ std::make_unique<Audio>(
-		audio_decoder_->audio_sample_rate()) },
+		audio_decoder_->audio_sample_rate(), audio_decoder_->channels()) },
 	audio_format_converter_{ std::make_unique<AudioFormatConverter>(
 		audio_decoder_->channel_layout(), audio_decoder_->audio_sample_rate(), audio_decoder_->format()) },
 	timer_{std::make_unique<Timer>()},

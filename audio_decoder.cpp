@@ -44,6 +44,10 @@ int AudioDecoder::audio_sample_rate() const {
 	return codec_context_->time_base.den;
 }
 
+int AudioDecoder::channels() const {
+	return codec_context_->channels;
+}
+
 uint64_t AudioDecoder::channel_layout() const {
 	return codec_context_->channel_layout;
 }
