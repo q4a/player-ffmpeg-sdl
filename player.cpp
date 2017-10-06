@@ -24,6 +24,7 @@ Player::Player(const std::string &file_name) :
 		video_decoder_->width(), video_decoder_->height(),
 		video_decoder_->pixel_format(), AV_PIX_FMT_YUV420P)},
 	display_{std::make_unique<Display>(
+		video_decoder_->display_width(), video_decoder_->display_height(),
 		video_decoder_->width(), video_decoder_->height())},
 	audio_{ std::make_unique<Audio>(
 		audio_decoder_->audio_sample_rate(), audio_decoder_->channels()) },
@@ -267,7 +268,7 @@ void Player::video() {
 					//std::cout << "-- VIDEO PTS: " << (frame->pts/1000/1000.0) << std::endl;
 					std::cout << "-- VIDEO PTS: " << (video_clock_ / 1000 / 1000.0) << std::endl;
 					std::cout << "-- AUDIO PTS: " << (audio_clock_ / 1000 / 1000.0) << std::endl;
-					std::cout << "-- DIFF PTS: " << fabs((video_clock_ / 1000 / 1000.0) - (audio_clock_ / 1000 / 1000.0)) << std::endl;
+					std::cout << "-- DIFF PTS: " << (video_clock_ / 1000 / 1000.0) - (audio_clock_ / 1000 / 1000.0) << std::endl;
 					std::cout << "---" << std::endl;
 				}
 

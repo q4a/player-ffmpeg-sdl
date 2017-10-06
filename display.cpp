@@ -18,7 +18,7 @@ SDL::~SDL() {
 	SDL_Quit();
 }
 
-Display::Display(const unsigned width, const unsigned height) :
+Display::Display(const unsigned width, const unsigned height, const unsigned src_width, const unsigned src_height) :
 	window_{check_SDL(SDL_CreateWindow(
 		"player", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE),
@@ -29,7 +29,7 @@ Display::Display(const unsigned width, const unsigned height) :
 		"renderer"), SDL_DestroyRenderer},
 	texture_{check_SDL(SDL_CreateTexture(
 		renderer_.get(), SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING,
-		width, height), "renderer"), SDL_DestroyTexture} {
+		src_width, src_height), "renderer"), SDL_DestroyTexture} {
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 	SDL_RenderSetLogicalSize(renderer_.get(), width, height);

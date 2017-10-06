@@ -48,6 +48,38 @@ unsigned VideoDecoder::height() const {
 	return codec_context_->height;
 }
 
+unsigned VideoDecoder::display_width() const {
+	unsigned width, height;
+	get_display_size(&width, &height);
+	return width;
+}
+
+unsigned VideoDecoder::display_height() const {
+	unsigned width, height;
+	get_display_size(&width, &height);
+	return height;
+}
+
+void VideoDecoder::get_display_size(unsigned *width, unsigned *height) const {
+	// some video files have custom aspect ratios
+	double aspect_ratio;
+	if (codec_context_->sample_aspect_ratio.num == 0)
+		aspect_ratio = 0;
+	else
+		aspect_ratio = av_q2d(codec_context_->sample_aspect_ratio);
+
+	if (aspect_ratio <= 0.0)
+		aspect_ratio = 1.0;
+	aspect_ratio *= (double)codec_context_->width / (double)codec_context_->height;
+
+	*height = codec_context_->height;
+	*width = lrint(*height * aspect_ratio) & ~1;
+	if (*width > codec_context_->width) {
+		*width = codec_context_->width;
+		*height = lrint(*width / aspect_ratio) & ~1;
+	}
+}
+
 AVPixelFormat VideoDecoder::pixel_format() const {
 	return codec_context_->pix_fmt;
 }

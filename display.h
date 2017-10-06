@@ -21,7 +21,7 @@ private:
 	SDL_Event event_;
 
 public:
-	Display(const unsigned width, const unsigned height);
+	Display(const unsigned width, const unsigned height, const unsigned src_width, const unsigned src_height);
 
 	// Copy frame to display
 	void refresh(
