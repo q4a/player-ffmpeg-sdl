@@ -12,7 +12,7 @@ AudioFormatConverter::AudioFormatConverter(
 	conversion_context_{swr_alloc()} {
 
 	av_opt_set_channel_layout(conversion_context_, "in_channel_layout", channel_layout_, 0);
-	av_opt_set_channel_layout(conversion_context_, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+	av_opt_set_channel_layout(conversion_context_, "out_channel_layout", channel_layout_, 0);
 	av_opt_set_int(conversion_context_, "in_sample_rate", sample_rate_, 0);
 	av_opt_set_int(conversion_context_, "out_sample_rate", sample_rate_, 0);
 	av_opt_set_sample_fmt(conversion_context_, "in_sample_fmt", format_, 0);
