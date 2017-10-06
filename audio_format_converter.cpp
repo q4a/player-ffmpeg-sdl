@@ -1,4 +1,5 @@
 #include "audio_format_converter.h"
+#include "ffmpeg.h"
 
 extern "C"
 {
@@ -16,7 +17,7 @@ AudioFormatConverter::AudioFormatConverter(
 	av_opt_set_int(conversion_context_, "out_sample_rate", sample_rate_, 0);
 	av_opt_set_sample_fmt(conversion_context_, "in_sample_fmt", format_, 0);
 	av_opt_set_sample_fmt(conversion_context_, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
-	swr_init(conversion_context_);
+	ffmpeg::check(swr_init(conversion_context_));
 }
 
 int AudioFormatConverter::convert(AVFrame* src, uint8_t **out, int out_count) {

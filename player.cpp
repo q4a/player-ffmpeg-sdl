@@ -196,25 +196,27 @@ void Player::decode_audio() {
 						demuxer_->audio_time_base(),
 						microseconds);
 
-					uint8_t *output;
-					int out_samples = frame_decoded->nb_samples;
-					av_samples_alloc(&output, NULL, audio_decoder_->channels(), out_samples, AV_SAMPLE_FMT_S16, 0);
-					out_samples = audio_format_converter_->convert(frame_decoded.get(), &output, out_samples);
-					int bytes_per_sample = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
-					size_t unpadded_linesize = out_samples * bytes_per_sample;
-
-					// calculate delay based on audio queue size and output samples per second
-					double samples_per_second = (double)(audio_decoder_->audio_sample_rate() * audio_decoder_->channels() * audio_->bytes_per_sample());
-					double xdelay = SDL_GetQueuedAudioSize(audio_->dev()) / samples_per_second;
+					// calculate delay based on audio queue size and output bytes per second
+					double bytes_per_second = (double)(audio_decoder_->audio_sample_rate() * audio_decoder_->channels() * audio_->bytes_per_sample());
+					double xdelay = SDL_GetQueuedAudioSize(audio_->dev()) / bytes_per_second;
 					{
 						std::lock_guard<std::mutex> lock(infolock_);
 						audio_clock_ = frame_decoded->pts - static_cast<int64_t>(xdelay * 1000 * 1000);
 					}
 
-					//audio_->queue(output, unpadded_linesize * 2);
-					audio_->queue(output, unpadded_linesize * audio_decoder_->channels());
+					uint8_t *output;
+					int out_samples = frame_decoded->nb_samples;
+					if (av_samples_alloc(&output, NULL, audio_decoder_->channels(), out_samples, AV_SAMPLE_FMT_S16, 0) >= 0)
+					{
+						out_samples = audio_format_converter_->convert(frame_decoded.get(), &output, out_samples);
+						int bytes_per_sample = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+						size_t unpadded_linesize = out_samples * bytes_per_sample;
 
-					av_freep(&output);
+						//audio_->queue(output, unpadded_linesize * 2);
+						audio_->queue(output, unpadded_linesize * audio_decoder_->channels());
+
+						av_freep(&output);
+					}
 				}
 			}
 		}

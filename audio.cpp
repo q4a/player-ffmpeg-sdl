@@ -1,5 +1,6 @@
 #include "audio.h"
 #include <stdexcept>
+#include <iostream>
 
 template <typename T>
 inline T check_SDL(T value, const std::string &message) {
@@ -12,12 +13,19 @@ inline T check_SDL(T value, const std::string &message) {
 
 Audio::Audio(const int freq, Uint8 channels)
 {
+	memset(&want_, 0, sizeof(want_));
 	want_.freq = freq;
 	want_.format = AUDIO_S16SYS;
 	want_.channels = channels;
 	//want_.samples = 4096;
 	want_.samples = 1024;
 	dev_ = SDL_OpenAudioDevice(NULL, 0, &want_, &have_, 0);
+
+	if (have_.format != AUDIO_S16SYS)
+	{
+		std::cerr << "SDL advised audio format " << have_.format << " is not supported!" << std::endl;
+	}
+
 	SDL_PauseAudioDevice(dev_, 0);
 }
 
