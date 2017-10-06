@@ -30,6 +30,7 @@ public:
 
 	bool push(T &&data);
 	bool pop(T &data);
+	int size();
 
 	// The queue has finished accepting input
 	void finished();
@@ -87,6 +88,12 @@ bool Queue<T>::pop(T &data) {
 	}
 
 	return false;
+}
+
+template <class T>
+int Queue<T>::size() {
+	std::unique_lock<std::mutex> lock(mutex_);
+	return queue_.size();
 }
 
 template <class T>

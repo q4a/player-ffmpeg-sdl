@@ -27,6 +27,9 @@ private:
 	void decode_audio();
 	void video();
 private:
+	std::mutex infolock_;
+	int64_t video_clock_, audio_clock_;
+
 	std::unique_ptr<Demuxer> demuxer_;
 	std::unique_ptr<VideoDecoder> video_decoder_;
 	std::unique_ptr<AudioDecoder> audio_decoder_;

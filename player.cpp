@@ -8,9 +8,13 @@ extern "C" {
 }
 
 const size_t Player::video_queue_size_{5};
-const size_t Player::audio_queue_size_{100};
+const size_t Player::audio_queue_size_{5};
 
 Player::Player(const std::string &file_name) :
+	infolock_{},
+	video_clock_{ 0 },
+	audio_clock_{ 0 },
+
 	demuxer_{std::make_unique<Demuxer>(file_name)},
 	video_decoder_{std::make_unique<VideoDecoder>(
 		demuxer_->video_codec_parameters())},
@@ -48,6 +52,7 @@ void Player::operator()() {
 
 void Player::demultiplex() {
 	try {
+		Uint32 audio_ticks = SDL_GetTicks();
 		for (;;) {
 			// Create AVPacket
 			std::unique_ptr<AVPacket, std::function<void(AVPacket*)>> packet{
@@ -73,6 +78,11 @@ void Player::demultiplex() {
 				if (!audio_packet_queue_->push(move(packet))) {
 					break;
 				}
+				if (SDL_TICKS_PASSED(SDL_GetTicks(), audio_ticks + 2000))
+				{
+					audio_ticks = SDL_GetTicks();
+					//std::cout << "-- AUDIO QUEUE SIZE: " << audio_packet_queue_->size() << std::endl;
+				}
 			}
 		}
 	} catch (...) {
@@ -86,6 +96,8 @@ void Player::demultiplex() {
 void Player::decode_video() {
 	try {
 		const AVRational microseconds = {1, 1000000};
+
+		Uint32 decode_ticks = SDL_GetTicks();
 
 		for (;;) {
 			// Create AVFrame and AVQueue
@@ -134,6 +146,13 @@ void Player::decode_video() {
 					if (!frame_queue_->push(move(frame_converted))) {
 						break;
 					}
+
+					if (SDL_TICKS_PASSED(SDL_GetTicks(), decode_ticks + 1000))
+					{
+						decode_ticks = SDL_GetTicks();
+						//std::cout << "-- FRAME QUEUE SIZE: " << frame_queue_->size() << std::endl;
+					}
+
 				}
 			}
 		}
@@ -178,12 +197,21 @@ void Player::decode_audio() {
 
 					uint8_t *output;
 					int out_samples = frame_decoded->nb_samples;
-					av_samples_alloc(&output, NULL, 2, out_samples, AV_SAMPLE_FMT_S16, 0);
+					av_samples_alloc(&output, NULL, audio_decoder_->channels(), out_samples, AV_SAMPLE_FMT_S16, 0);
 					out_samples = audio_format_converter_->convert(frame_decoded.get(), &output, out_samples);
 					int bytes_per_sample = av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 					size_t unpadded_linesize = out_samples * bytes_per_sample;
 
-					audio_->queue(output, unpadded_linesize * 2);
+					// calculate delay based on audio queue size and output samples per second
+					double samples_per_second = (double)(audio_decoder_->audio_sample_rate() * audio_decoder_->channels() * audio_->bytes_per_sample());
+					double xdelay = SDL_GetQueuedAudioSize(audio_->dev()) / samples_per_second;
+					{
+						std::lock_guard<std::mutex> lock(infolock_);
+						audio_clock_ = frame_decoded->pts - static_cast<int64_t>(xdelay * 1000 * 1000);
+					}
+
+					//audio_->queue(output, unpadded_linesize * 2);
+					audio_->queue(output, unpadded_linesize * audio_decoder_->channels());
 
 					av_freep(&output);
 				}
@@ -199,6 +227,8 @@ void Player::decode_audio() {
 void Player::video() {
 	try {
 		int64_t last_pts = 0;
+
+		Uint32 video_ticks = SDL_GetTicks();
 
 		for (uint64_t frame_number = 0;; ++frame_number) {
 
@@ -222,6 +252,23 @@ void Player::video() {
 				} else {
 					last_pts = frame->pts;
 					timer_->update();
+				}
+
+				{
+					std::lock_guard<std::mutex> lock(infolock_);
+					video_clock_ = last_pts;
+				}
+
+				if (SDL_TICKS_PASSED(SDL_GetTicks(), video_ticks + 1000))
+				{
+					std::lock_guard<std::mutex> lock(infolock_);
+
+					video_ticks = SDL_GetTicks();
+					//std::cout << "-- VIDEO PTS: " << (frame->pts/1000/1000.0) << std::endl;
+					std::cout << "-- VIDEO PTS: " << (video_clock_ / 1000 / 1000.0) << std::endl;
+					std::cout << "-- AUDIO PTS: " << (audio_clock_ / 1000 / 1000.0) << std::endl;
+					std::cout << "-- DIFF PTS: " << fabs((video_clock_ / 1000 / 1000.0) - (audio_clock_ / 1000 / 1000.0)) << std::endl;
+					std::cout << "---" << std::endl;
 				}
 
 				display_->refresh(

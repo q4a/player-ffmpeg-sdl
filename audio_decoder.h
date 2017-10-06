@@ -11,6 +11,7 @@ public:
 	bool receive(AVFrame* frame);
 	int audio_sample_rate() const;
 	int channels() const;
+	int bytes_per_sample() const;
 	uint64_t channel_layout() const;
 	AVSampleFormat format() const;
 	AVRational time_base() const;

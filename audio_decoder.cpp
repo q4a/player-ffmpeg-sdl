@@ -48,6 +48,11 @@ int AudioDecoder::channels() const {
 	return codec_context_->channels;
 }
 
+int AudioDecoder::bytes_per_sample() const {
+	return av_get_bytes_per_sample(codec_context_->sample_fmt);
+}
+
+
 uint64_t AudioDecoder::channel_layout() const {
 	return codec_context_->channel_layout;
 }
