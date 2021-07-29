@@ -10,12 +10,8 @@
 #include "audio_decoder.h"
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <thread>
 #include <vector>
-extern "C" {
-	#include <libavcodec/avcodec.h>
-}
 
 class Player {
 public:

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <string>
 extern "C" {
 	#include <libavutil/time.h>
 	#include <libavutil/imgutils.h>
@@ -57,9 +58,8 @@ void Player::demultiplex() {
 		for (;;) {
 			// Create AVPacket
 			std::unique_ptr<AVPacket, std::function<void(AVPacket*)>> packet{
-				new AVPacket,
-				[](AVPacket* p){ av_packet_unref(p); delete p; }};
-			av_init_packet(packet.get());
+				av_packet_alloc(),
+				[](AVPacket* p){ av_packet_free(&p); }};
 			packet->data = nullptr;
 
 			// Read frame into AVPacket
