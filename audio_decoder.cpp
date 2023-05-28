@@ -52,9 +52,9 @@ int AudioDecoder::bytes_per_sample() const {
 	return av_get_bytes_per_sample(codec_context_->sample_fmt);
 }
 
-
 uint64_t AudioDecoder::channel_layout() const {
-	return codec_context_->channel_layout;
+	return (codec_context_->channels == av_get_channel_layout_nb_channels(codec_context_->channel_layout)) ?
+			   codec_context_->channel_layout : av_get_default_channel_layout(codec_context_->channels);
 }
 
 AVSampleFormat AudioDecoder::format() const {
